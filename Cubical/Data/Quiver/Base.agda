@@ -35,11 +35,9 @@
 module Cubical.Data.Quiver.Base where
 
 open import Cubical.Foundations.Prelude
-
 open import Cubical.Data.Graph.Base
 open import Cubical.Data.Graph.Displayed as DG hiding (Section)
 open import Cubical.Data.Sigma
-
 open import Cubical.Categories.Category.Base
 open import Cubical.Categories.UnderlyingGraph
 open import Cubical.Categories.Displayed.Base
@@ -87,7 +85,7 @@ Graph→Quiver g .snd .cod x = x .snd .fst
 -- | The use of ≡ in this definition is the raison d'etre for the
 -- | Quiver-Graph distinction
 -- HetQG Q G ≅ QHom (Quiver→Graph Q) G
-Quiver→Graph : Quiver ℓq ℓq' → Graph ℓq (ℓ-max ℓq ℓq')
+Quiver→Graph : Quiver ℓq ℓq' → Graph _ _
 Quiver→Graph Q .Node = Q .fst
 Quiver→Graph Q .Edge A B =
   Σ[ e ∈ Q .snd .mor ]

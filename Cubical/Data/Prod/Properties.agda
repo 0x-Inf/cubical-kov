@@ -48,12 +48,6 @@ private
   testrefl : test ≡ (2 , 1)
   testrefl = refl
 
-  test' : ℕ ×Σ ℕ
-  test' = transp (λ i → ua (Σ-swap-≃ {A = ℕ} {A' = ℕ}) i) i0 (1 , 2)
-
-  test'refl : test' ≡ (2 , 1)
-  test'refl = refl
-
 -- equivalence between the sigma-based definition and the inductive one
 A×B≃A×ΣB : A × B ≃ A ×Σ B
 A×B≃A×ΣB = isoToEquiv (iso (λ { (a , b) → (a , b)})
