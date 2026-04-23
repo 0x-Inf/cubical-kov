@@ -9,12 +9,17 @@ open import Cubical.Categories.Instances.Elements
 open import Cubical.Categories.Instances.Lift
 open import Cubical.Categories.Functor
 open import Cubical.Categories.Instances.Sets
+open import Cubical.Categories.Instances.TotalCategory
 open import Cubical.Categories.Isomorphism
 open import Cubical.Categories.Limits
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.Representable
 
+open import Cubical.Categories.Displayed.Base
+open import Cubical.Categories.Displayed.Functor
+open import Cubical.Categories.Displayed.Instances.Element
+open import Cubical.Categories.Displayed.HLevels
 {-
 
   Given two presheaves P and Q on the same category C, a morphism
@@ -45,38 +50,38 @@ module _ {C : Category ℓc ℓc'}{D : Category ℓd ℓd'}
          (F : Functor C D)
          (P : Presheaf C ℓp)
          (Q : Presheaf D ℓq) where
+  private
+    module P = PresheafNotation P
+    module Q = PresheafNotation Q
   PshHom : Type (ℓ-max (ℓ-max (ℓ-max ℓc ℓc') ℓp) ℓq)
   PshHom =
     PresheafCategory C (ℓ-max ℓp ℓq)
       [ LiftF ℓq ∘F P , LiftF ℓp ∘F Q ∘F (F ^opF) ]
 
   module _ (h : PshHom) where
-    -- This should define a functor on the category of elements
-    pushElt : Elementᴾ {C = C} P → Elementᴾ {C = D} Q
-    pushElt (A , η) = (F ⟅ A ⟆) , (h .N-ob A (lift η) .lower)
+    -- -- This should define a functor on the category of elements
+    -- pushElt : Σ[ c ∈ C .ob ] P.p[ c ] → Σ[ d ∈ D .ob ] Q.p[ d ]
+    -- pushElt (A , η) = (F ⟅ A ⟆) , (h .N-ob A (lift η) .lower)
 
-    pushEltNat : ∀ {B : C .ob} (η : Elementᴾ {C = C} P) (f : C [ B , η .fst ])
-                  → (pushElt η .snd ∘ᴾ⟨ Q ⟩ F .F-hom f)
-                    ≡ pushElt (B , η .snd ∘ᴾ⟨ P ⟩ f) .snd
-    pushEltNat η f i = h .N-hom f (~ i) (lift (η .snd)) .lower
+    -- pushEltNat : ∀ {B : C .ob} (η : Σ[ c ∈ C .ob]) (f : C [ B , η .fst ])
+    --               → (pushElt η .snd ∘ᴾ⟨ Q ⟩ F .F-hom f)
+    --                 ≡ pushElt (B , η .snd ∘ᴾ⟨ P ⟩ f) .snd
+    -- pushEltNat η f i = h .N-hom f (~ i) (lift (η .snd)) .lower
 
-    pushEltF : Functor (∫ᴾ_ {C = C} P) (∫ᴾ_ {C = D} Q)
-    pushEltF .F-ob = pushElt
-    pushEltF .F-hom {x}{y} (f , commutes) .fst = F .F-hom f
-    pushEltF .F-hom {x}{y} (f , commutes) .snd =
-      pushElt _ .snd ∘ᴾ⟨ Q ⟩ F .F-hom f
-        ≡⟨ pushEltNat y f ⟩
-      pushElt (_ , y .snd ∘ᴾ⟨ P ⟩ f) .snd
-        ≡⟨ cong (λ a → pushElt a .snd) (ΣPathP (refl , commutes)) ⟩
-      pushElt x .snd ∎
-    pushEltF .F-id = Σ≡Prop (λ x → (Q ⟅ _ ⟆) .snd _ _) (F .F-id)
-    pushEltF .F-seq f g =
-      Σ≡Prop ((λ x → (Q ⟅ _ ⟆) .snd _ _)) (F .F-seq (f .fst) (g .fst))
+    pushEltF : Functor (∫ P) (∫ Q)
+    pushEltF = ∫F {F = F} (mkPropHomsFunctor (hasPropHomsElement Q)
+      (λ {x} z → h .N-ob x (lift z) .lower)
+      λ {x} {y} {f} {p} {p'} fp≡p' →
+        F ⟪ f ⟫ Q.⋆ (h .N-ob _ (lift p') .lower)
+          ≡[ i ]⟨ h .N-hom f (~ i) (lift p') .lower ⟩
+        h .N-ob _ (lift (f P.⋆ p')) .lower
+          ≡[ i ]⟨ h .N-ob _ (lift (fp≡p' i)) .lower ⟩
+        h .N-ob _ (lift p) .lower
+          ∎)
 
     preservesRepresentation : ∀ (η : UniversalElement C P)
                             → Type (ℓ-max (ℓ-max ℓd ℓd') ℓq)
-    preservesRepresentation η = isUniversal D Q (η' .fst) (η' .snd)
-      where η' = pushElt (η .vertex , η .element)
+    preservesRepresentation η = isUniversal D Q _ (h .N-ob _ (lift (η .element)) .lower)
 
     preservesRepresentations : Type _
     preservesRepresentations = ∀ η → preservesRepresentation η
@@ -88,8 +93,8 @@ module _ {C : Category ℓc ℓc'}{D : Category ℓd ℓd'}
       ∀ η → preservesRepresentation η → preservesRepresentations
     preservesAnyRepresentation→preservesAllRepresentations η preserves-η η' =
       isTerminalToIsUniversal D Q
-        (preserveAnyTerminal→PreservesTerminals (∫ᴾ_ {C = C} P)
-                                 (∫ᴾ_ {C = D} Q)
+        (preserveAnyTerminal→PreservesTerminals (∫ P)
+                                 (∫ Q)
                                  pushEltF
                                  (universalElementToTerminalElement C P η)
                                  (isUniversalToIsTerminal D Q _ _ preserves-η)
