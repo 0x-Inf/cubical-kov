@@ -59,15 +59,6 @@ module _ {C : Category ℓc ℓc'}{D : Category ℓd ℓd'}
       [ LiftF ℓq ∘F P , LiftF ℓp ∘F Q ∘F (F ^opF) ]
 
   module _ (h : PshHom) where
-    -- -- This should define a functor on the category of elements
-    -- pushElt : Σ[ c ∈ C .ob ] P.p[ c ] → Σ[ d ∈ D .ob ] Q.p[ d ]
-    -- pushElt (A , η) = (F ⟅ A ⟆) , (h .N-ob A (lift η) .lower)
-
-    -- pushEltNat : ∀ {B : C .ob} (η : Σ[ c ∈ C .ob]) (f : C [ B , η .fst ])
-    --               → (pushElt η .snd ∘ᴾ⟨ Q ⟩ F .F-hom f)
-    --                 ≡ pushElt (B , η .snd ∘ᴾ⟨ P ⟩ f) .snd
-    -- pushEltNat η f i = h .N-hom f (~ i) (lift (η .snd)) .lower
-
     pushEltF : Functor (∫ P) (∫ Q)
     pushEltF = ∫F {F = F} (mkPropHomsFunctor (hasPropHomsElement Q)
       (λ {x} z → h .N-ob x (lift z) .lower)
