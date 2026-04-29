@@ -130,7 +130,8 @@ pathToIso-refl {C = C} {x} = JRefl (λ z _ → CatIso C x z) (idCatIso)
 eqToIso : {C : Category ℓ ℓ'} {x y : C .ob} (p : x Eq.≡ y) → CatIso C x y
 eqToIso {C = C} Eq.refl = idCatIso
 
--- eqToIso-refl would just be refl
+eqToIso-refl : {C : Category ℓ ℓ'} {x : C .ob} → eqToIso {C = C} {x} Eq.refl ≡ idCatIso
+eqToIso-refl = refl
 
 eqToMorphism : {C : Category ℓ ℓ'} {x y : C .ob} (p : x Eq.≡ y) → C [ x , y ]
 eqToMorphism {C = C} p = eqToIso {C = C} p .fst
